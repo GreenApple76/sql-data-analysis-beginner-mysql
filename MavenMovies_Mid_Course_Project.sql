@@ -5,6 +5,10 @@ use mavenmovies;
 email addresses, and the store identification number where they work. 
 */ 
 
+SELECT 
+    first_name, last_name, email, store_id
+FROM
+    staff;
 
 
 
@@ -16,7 +20,11 @@ email addresses, and the store identification number where they work.
 2.	We will need separate counts of inventory items held at each of your two stores. 
 */ 
 
-
+SELECT 
+    store_id, COUNT(inventory_id) number_of_movies
+FROM
+    inventory
+GROUP BY store_id;
 
 
 
@@ -26,7 +34,13 @@ email addresses, and the store identification number where they work.
 3.	We will need a count of active customers for each of your stores. Separately, please. 
 */
 
-
+SELECT 
+    store_id,
+    COUNT(customer_id) AS active_customers
+FROM
+    customer
+WHERE active = 1
+GROUP BY store_id;
 
 
 
@@ -38,7 +52,10 @@ email addresses, and the store identification number where they work.
 of all customer email addresses stored in the database. 
 */
 
-
+SELECT 
+    COUNT(email) AS customer_email_addresses
+FROM
+    customer;
 
 
 
@@ -50,8 +67,15 @@ you have in inventory at each store and then provide a count of the unique categ
 */
 
 
+SELECT 
+    COUNT(DISTINCT film_id) AS unique_film_titles
+FROM
+    film;
 
-
+SELECT 
+    COUNT(DISTINCT name) AS unique_film_categories
+FROM
+    category;
 
 
 
@@ -64,7 +88,12 @@ Please provide the replacement cost for the film that is least expensive to repl
 the most expensive to replace, and the average of all films you carry. ``	
 */
 
-
+SELECT 
+    MIN(replacement_cost) AS least_expensive_to_replace,
+    MAX(replacement_cost) AS most_expensive_to_replace,
+    AVG(replacement_cost) AS average_replacement_cost
+FROM
+    film;
 
 
 
@@ -76,7 +105,11 @@ processing restrictions in place in order to minimize the future risk of fraud b
 Please provide the average payment you process, as well as the maximum payment you have processed.
 */
 
-
+SELECT 
+    AVG(amount) AS average_payment,
+    MAX(amount) AS maximum_payment
+FROM
+    payment;
 
 
 
@@ -86,5 +119,11 @@ Please provide a list of all customer identification values, with a count of ren
 they have made all-time, with your highest volume customers at the top of the list.
 */
 
+SELECT 
+    customer_id, COUNT(rental_id) AS number_of_rentals
+FROM
+    rental
+GROUP BY customer_id
+ORDER BY COUNT(rental_id) DESC;
 
 
