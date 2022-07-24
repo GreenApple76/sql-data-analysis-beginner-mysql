@@ -4,7 +4,23 @@ Please send over the managers’ names at each store, with the full address
 of each property (street address, district, city, and country please).  
 */ 
 
-
+SELECT 
+    staff.first_name,
+    staff.last_name,
+    address.address,
+    address.district,
+    city.city,
+    country.country
+FROM
+    staff
+        INNER JOIN
+    store ON staff.staff_id = store.manager_staff_id
+        INNER JOIN
+    address ON store.address_id = address.address_id
+        INNER JOIN
+    city ON address.city_id = city.city_id
+        INNER JOIN
+    country ON city.country_id = country.country_id;
 
 
 
@@ -19,7 +35,17 @@ Please pull together a list of each inventory item you have stocked, including t
 the inventory_id, the name of the film, the film’s rating, its rental rate and replacement cost. 
 */
 
-
+SELECT 
+    inventory.store_id,
+    inventory.inventory_id,
+    film.title AS name_of_film,
+    film.rating,
+    film.rental_rate,
+    film.replacement_cost
+FROM
+    inventory
+        INNER JOIN
+    film ON inventory.film_id = film.film_id;
 
 
 
@@ -37,7 +63,16 @@ the inventory_id, the name of the film, the film’s rating, its rental rate and
 of your inventory. We would like to know how many inventory items you have with each rating at each store. 
 */
 
-
+SELECT 
+    inventory.store_id,
+    film.rating,
+    COUNT(film.film_id) AS number_of_items
+FROM
+    inventory
+        INNER JOIN
+    film ON inventory.film_id = film.film_id
+GROUP BY inventory.store_id , film.rating
+ORDER BY inventory.store_id;
 
 
 
@@ -56,7 +91,21 @@ We would like to see the number of films, as well as the average replacement cos
 sliced by store and film category. 
 */ 
 
-
+SELECT 
+    inventory.store_id,
+    category.name as category,
+    COUNT(film.film_id) AS number_of_films,
+    AVG(film.replacement_cost) AS average_replacement_cost,
+    SUM(film.replacement_cost) AS total_replacement_cost
+FROM
+    film
+        INNER JOIN
+    film_category ON film.film_id = film_category.film_id
+        INNER JOIN
+    inventory ON film_category.film_id = inventory.film_id
+        INNER JOIN
+    category ON film_category.category_id = category.category_id
+GROUP BY inventory.store_id , category.name; 
 
 
 
@@ -73,7 +122,26 @@ of all customer names, which store they go to, whether or not they are currently
 and their full addresses – street address, city, and country. 
 */
 
-
+SELECT 
+    customer.first_name,
+    customer.last_name,
+    address.address,
+    address.address2,
+    city.city,
+    country.country,
+    CASE
+        WHEN customer.active = 1 THEN 'active'
+        ELSE 'inactive'
+    END AS customer_status
+FROM
+    customer
+        INNER JOIN
+    address ON customer.address_id = address.address_id
+        INNER JOIN
+    city ON address.city_id = city.city_id
+        INNER JOIN
+    country ON city.country_id = country.country_id
+GROUP BY customer.customer_id;
 
 
 
@@ -91,7 +159,17 @@ lifetime rentals, and the sum of all payments you have collected from them. It w
 see this ordered on total lifetime value, with the most valuable customers at the top of the list. 
 */
 
-
+SELECT 
+    customer.first_name,
+    customer.last_name,
+    COUNT(payment.rental_id) AS total_lifetime_rentals,
+    SUM(payment.amount) AS sum_of_all_payments
+FROM
+    customer
+        LEFT JOIN
+    payment ON customer.customer_id = payment.customer_id
+GROUP BY customer.customer_id
+ORDER BY sum(payment.amount) DESC;
 
 
 
@@ -110,7 +188,20 @@ Could you please note whether they are an investor or an advisor, and for the in
 it would be good to include which company they work with. 
 */
 
-
+SELECT 
+    'advisor' AS type,
+    advisor.first_name,
+    advisor.last_name,
+    NULL AS company_name
+FROM
+    advisor 
+UNION SELECT 
+    'investor' AS type,
+    investor.first_name,
+    investor.last_name,
+    company_name
+FROM
+    investor;
 
 
 
@@ -126,4 +217,18 @@ Of all the actors with three types of awards, for what % of them do we carry a f
 And how about for actors with two types of awards? Same questions. 
 Finally, how about actors with just one award? 
 */
-
+SELECT 
+    CASE
+        WHEN actor_award.awards = 'Emmy, Oscar, Tony ' THEN 3
+        WHEN actor_award.awards = 'Emmy, Oscar' THEN 2
+        WHEN actor_award.awards = 'Emmy, Tony' THEN 2
+        WHEN actor_award.awards = 'Oscar, Tony' THEN 2
+        ELSE 1
+    END AS total_awards_per_actor,
+    AVG(CASE
+        WHEN actor_award.actor_id IS NOT NULL THEN 1
+        ELSE 0
+    END) AS percentage_of_awarded_actors_we_carry_film
+FROM
+    actor_award
+GROUP BY total_awards_per_actor;
